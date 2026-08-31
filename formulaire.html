@@ -34,7 +34,7 @@
           <legend>As-tu déjà envoyé des photos intimes de toi ?</legend>
           <div class="radio-row"><input type="radio" name="nude" id="nude_oui" value="0" required><label for="nude_oui">Oui</label></div>
           <div class="radio-row"><input type="radio" name="nude" id="nude_non" value="1"><label for="nude_non">Non</label></div>
-          <div class="radio-row"><input type="radio" name="nude" id="nude_np" value="-1"><label for="nude_np">Je ne réponds pas</label></div>
+          <div class="radio-row"><input type="radio" name="nude" id="nude_np" value="-1" checked><label for="nude_np">Je ne réponds pas</label></div>
         </fieldset>
       </div>
 
@@ -43,7 +43,7 @@
           <legend>Te rases-tu souvent le pubis ?</legend>
           <div class="radio-row"><input type="radio" name="rase" id="rase_oui" value="0" required><label for="rase_oui">Oui</label></div>
           <div class="radio-row"><input type="radio" name="rase" id="rase_non" value="1"><label for="rase_non">Non</label></div>
-          <div class="radio-row"><input type="radio" name="rase" id="rase_np" value="-1"><label for="rase_np">Je ne réponds pas</label></div>
+          <div class="radio-row"><input type="radio" name="rase" id="rase_np" value="-1" checked><label for="rase_np">Je ne réponds pas</label></div>
         </fieldset>
       </div>
 
@@ -135,8 +135,8 @@
 
 <script>
   // Remplace par l'URL de ton Worker Cloudflare une fois déployé.
-  const ENDPOINT = "https://sondage-worker.kink-journal.workers.dev/submit";
-  
+  const ENDPOINT = "https://TON-WORKER.TON-SOUS-DOMAINE.workers.dev/submit";
+
   const amourSelect = document.querySelectorAll('input[name="amour"]');
   const ageAmourDiv = document.getElementById("age_amour_div");
   amourSelect.forEach(r => r.addEventListener("change", () => {
