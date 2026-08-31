@@ -37,6 +37,48 @@
   const countBox = document.getElementById("count");
   const table = document.getElementById("results");
 
+  // Colonnes dont les valeurs -1/0/1 doivent être traduites.
+  const ENUM_LABELS = {
+    "-1": "Pas de réponse",
+    "0": "Oui",
+    "1": "Non",
+  };
+  const ENUM_COLUMNS = new Set(["nude", "rase", "circ", "amour", "soumis", "dom", "NNN"]);
+
+  // Noms de colonnes plus lisibles à l'affichage.
+  const COLUMN_LABELS = {
+    age: "Âge",
+    porno: "Porno /sem",
+    nb_mast: "Masturbation /sem",
+    nude: "A envoyé un nude",
+    rase: "Se rase",
+    circ: "Circoncis",
+    taille_repos: "Taille au repos (cm)",
+    taille: "Taille en érection (cm)",
+    amour: "A eu un rapport",
+    age_amour: "Âge première fois",
+    orient: "Orientation",
+    soumis: "Soumis",
+    dom: "Dominant",
+    NNN: "A fait NNN",
+    NNN_resultat: "Jours tenus NNN",
+    comm: "Commentaire",
+    submitted_at: "Envoyé le",
+  };
+
+  function formatValue(col, value) {
+    if (value === null || value === undefined || value === "") return "";
+    if (ENUM_COLUMNS.has(col)) {
+      const label = ENUM_LABELS[String(value)];
+      if (label) return label;
+    }
+    if (col === "submitted_at") {
+      const d = new Date(value);
+      if (!isNaN(d)) return d.toLocaleString("fr-FR");
+    }
+    return value;
+  }
+
   loadBtn.addEventListener("click", async () => {
     errorBox.textContent = "";
     table.innerHTML = "";
@@ -74,7 +116,7 @@
       const thead = document.createElement("tr");
       columns.forEach(col => {
         const th = document.createElement("th");
-        th.textContent = col;
+        th.textContent = COLUMN_LABELS[col] || col;
         th.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; text-align:left; position:sticky; top:0;";
         thead.appendChild(th);
       });
@@ -84,7 +126,7 @@
         const tr = document.createElement("tr");
         columns.forEach(col => {
           const td = document.createElement("td");
-          td.textContent = row[col] === null || row[col] === undefined ? "" : row[col];
+          td.textContent = formatValue(col, row[col]);
           td.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; white-space:nowrap;";
           tr.appendChild(td);
         });
