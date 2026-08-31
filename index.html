@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enquête — Avant de commencer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Avant de commencer</h1>
+  <p class="muted">Enquête anonyme à but pédagogique.</p>
+
+  <p>Cette enquête cherche à mieux comprendre certains comportements et expériences liés à la sexualité masculine. Elle est menée dans un cadre pédagogique et la participation est entièrement libre.</p>
+
+  <h2>Anonymat</h2>
+  <ul>
+    <li>Aucune information permettant de t'identifier n'est demandée (pas de nom, pas de contact, pas d'adresse mail).</li>
+    <li>Tu peux répondre "je ne réponds pas" à n'importe quelle question.</li>
+    <li>Tu peux fermer cette page à tout moment, sans justification.</li>
+  </ul>
+
+  <h2>Conditions de participation</h2>
+  <p>Cette enquête est réservée aux personnes <strong>majeures (18 ans ou plus)</strong>. La page suivante te demandera de confirmer ton âge avant de continuer.</p>
+
+  <div class="card">
+    <form id="confirmationForm">
+      <div class="checkbox-row">
+        <input type="checkbox" id="check1">
+        <label for="check1">Je confirme avoir lu et compris les informations ci-dessus.</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="check2">
+        <label for="check2">Je confirme avoir 18 ans ou plus.</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="check3">
+        <label for="check3">Je confirme participer de manière volontaire.</label>
+      </div>
+      <button type="submit" id="submitBtn" disabled>Commencer l'enquête</button>
+    </form>
+  </div>
+
+  <p class="footnote">Les données recueillies sont utilisées uniquement à des fins pédagogiques et ne sont partagées avec aucun tiers.</p>
+</main>
+
+<script>
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  const submitBtn = document.getElementById('submitBtn');
+  const form = document.getElementById('confirmationForm');
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      submitBtn.disabled = ![...checkboxes].every(c => c.checked);
+    });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    window.location.href = "formulaire.html";
+  });
+</script>
+</body>
+</html>
