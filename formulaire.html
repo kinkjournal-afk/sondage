@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sondage — sexualité masculine</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div id="form-view">
+    <h1>Sondage anonyme</h1>
+    <p class="muted">Aucune donnée permettant de t'identifier n'est demandée. Réponds "je ne réponds pas" si une question te met mal à l'aise.</p>
+
+    <form id="survey" class="card" novalidate>
+
+      <div class="field">
+        <label for="age">Quel est ton âge ? <span class="hint">Réservé aux 18 ans et plus.</span></label>
+        <input type="number" id="age" name="age" min="18" max="99" required>
+      </div>
+
+      <div class="field">
+        <label for="porno">Regardes-tu du contenu pornographique ? <span class="hint">Nombre de fois par semaine en moyenne, 0 si jamais, -1 pour ne pas répondre.</span></label>
+        <input type="number" id="porno" name="porno" min="-1" step="0.1" required>
+      </div>
+
+      <div class="field">
+        <label for="nb_mast">Fréquence de masturbation <span class="hint">Nombre de fois par semaine en moyenne, 0 si jamais, -1 pour ne pas répondre.</span></label>
+        <input type="number" id="nb_mast" name="nb_mast" min="-1" step="0.1" required>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>As-tu déjà envoyé des photos intimes de toi ?</legend>
+          <div class="radio-row"><input type="radio" name="nude" id="nude_oui" value="0" required><label for="nude_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="nude" id="nude_non" value="1"><label for="nude_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="nude" id="nude_np" value="-1"><label for="nude_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Te rases-tu souvent le pubis ?</legend>
+          <div class="radio-row"><input type="radio" name="rase" id="rase_oui" value="0" required><label for="rase_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="rase" id="rase_non" value="1"><label for="rase_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="rase" id="rase_np" value="-1"><label for="rase_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Es-tu circoncis ?</legend>
+          <div class="radio-row"><input type="radio" name="circ" id="circ_oui" value="0"><label for="circ_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="circ" id="circ_non" value="1"><label for="circ_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="circ" id="circ_np" value="-1" checked><label for="circ_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <label for="taille_repos">Taille au repos (en cm) <span class="hint">Laisse vide si tu ne réponds pas.</span></label>
+        <input type="number" id="taille_repos" name="taille_repos" min="0" step="0.1" max="20">
+      </div>
+
+      <div class="field">
+        <label for="taille">Taille en érection (en cm) <span class="hint">Laisse vide si tu ne réponds pas.</span></label>
+        <input type="number" id="taille" name="taille" min="0" max="30">
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>As-tu déjà eu un rapport sexuel ?</legend>
+          <div class="radio-row"><input type="radio" name="amour" id="amour_oui" value="0"><label for="amour_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="amour" id="amour_non" value="1"><label for="amour_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="amour" id="amour_np" value="-1" checked><label for="amour_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field" id="age_amour_div" style="display:none;">
+        <label for="age_amour">À quel âge, la première fois ?</label>
+        <input type="number" id="age_amour" name="age_amour" min="1" max="99">
+      </div>
+
+      <div class="field">
+        <label for="orient">Comment décrirais-tu ton orientation sexuelle ? <span class="hint">Facultatif.</span></label>
+        <input type="text" id="orient" name="orient" maxlength="60">
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Te définirais-tu comme plutôt soumis ?</legend>
+          <div class="radio-row"><input type="radio" name="soumis" id="soumis_oui" value="0"><label for="soumis_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="soumis" id="soumis_non" value="1"><label for="soumis_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="soumis" id="soumis_np" value="-1" checked><label for="soumis_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Te définirais-tu comme plutôt dominant ?</legend>
+          <div class="radio-row"><input type="radio" name="dom" id="dom_oui" value="0"><label for="dom_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="dom" id="dom_non" value="1"><label for="dom_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="dom" id="dom_np" value="-1" checked><label for="dom_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>As-tu déjà participé au No Nut November ?</legend>
+          <div class="radio-row"><input type="radio" name="NNN" id="nnn_oui" value="0"><label for="nnn_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="NNN" id="nnn_non" value="1"><label for="nnn_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="NNN" id="nnn_np" value="-1" checked><label for="nnn_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field" id="NNN_resultat_div" style="display:none;">
+        <label for="NNN_resultat">Combien de jours as-tu tenu ?</label>
+        <input type="number" id="NNN_resultat" name="NNN_resultat" min="0" max="30">
+      </div>
+
+      <div class="field">
+        <label for="comm">Une remarque à ajouter ? <span class="hint">Facultatif. N'indique aucune information permettant de t'identifier.</span></label>
+        <textarea id="comm" name="comm" rows="4" maxlength="500"></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn">Envoyer mes réponses</button>
+      <p class="error-message" id="form-error"></p>
+    </form>
+  </div>
+
+  <div id="status-view" class="status-box" style="display:none;">
+    <h1 id="status-title"></h1>
+    <p id="status-text" class="muted"></p>
+  </div>
+</main>
+
+<script>
+  // Remplace par l'URL de ton Worker Cloudflare une fois déployé.
+  const ENDPOINT = "https://TON-WORKER.TON-SOUS-DOMAINE.workers.dev/submit";
+
+  const amourSelect = document.querySelectorAll('input[name="amour"]');
+  const ageAmourDiv = document.getElementById("age_amour_div");
+  amourSelect.forEach(r => r.addEventListener("change", () => {
+    ageAmourDiv.style.display = document.getElementById("amour_oui").checked ? "block" : "none";
+  }));
+
+  const nnnSelect = document.querySelectorAll('input[name="NNN"]');
+  const nnnResultDiv = document.getElementById("NNN_resultat_div");
+  nnnSelect.forEach(r => r.addEventListener("change", () => {
+    nnnResultDiv.style.display = document.getElementById("nnn_oui").checked ? "block" : "none";
+  }));
+
+  const form = document.getElementById("survey");
+  const errorBox = document.getElementById("form-error");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    errorBox.textContent = "";
+
+    const age = parseInt(document.getElementById("age").value, 10);
+    if (isNaN(age) || age < 18) {
+      errorBox.textContent = "Cette enquête est réservée aux personnes de 18 ans et plus.";
+      return;
+    }
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Envoi en cours…";
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Erreur serveur");
+
+      document.getElementById("form-view").style.display = "none";
+      const statusView = document.getElementById("status-view");
+      statusView.style.display = "block";
+      document.getElementById("status-title").textContent = "Merci d'avoir participé";
+      document.getElementById("status-text").textContent = "Tes réponses ont été enregistrées de façon anonyme.";
+    } catch (err) {
+      errorBox.textContent = "L'envoi a échoué. Réessaie dans quelques instants.";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Envoyer mes réponses";
+    }
+  });
+</script>
+</body>
+</html>
