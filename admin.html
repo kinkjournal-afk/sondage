@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résultats — admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <h1>Résultats du sondage</h1>
+  <p class="muted">Page réservée à l'administrateur. Ne partage pas ce lien.</p>
+
+  <div class="card">
+    <div class="field">
+      <label for="worker">URL du Worker</label>
+      <input type="text" id="worker" value="https://sondage-worker.kink-journal.workers.dev">
+    </div>
+    <div class="field">
+      <label for="key">Clé admin (ADMIN_KEY)</label>
+      <input type="text" id="key" placeholder="colle ta clé ici">
+    </div>
+    <button id="loadBtn">Charger les résultats</button>
+    <p class="error-message" id="error"></p>
+  </div>
+
+  <p id="count" class="muted"></p>
+
+  <div style="overflow-x:auto;">
+    <table id="results" style="width:100%; border-collapse: collapse; font-size: 0.85rem;"></table>
+  </div>
+</main>
+
+<script>
+  const loadBtn = document.getElementById("loadBtn");
+  const errorBox = document.getElementById("error");
+  const countBox = document.getElementById("count");
+  const table = document.getElementById("results");
+
+  loadBtn.addEventListener("click", async () => {
+    errorBox.textContent = "";
+    table.innerHTML = "";
+    countBox.textContent = "";
+
+    const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
+    const key = document.getElementById("key").value.trim();
+
+    if (!worker || !key) {
+      errorBox.textContent = "Renseigne l'URL du Worker et la clé admin.";
+      return;
+    }
+
+    loadBtn.disabled = true;
+    loadBtn.textContent = "Chargement…";
+
+    try {
+      const res = await fetch(worker + "/export", {
+        headers: { "Authorization": "Bearer " + key }
+      });
+
+      if (res.status === 401) throw new Error("Clé admin incorrecte.");
+      if (!res.ok) throw new Error("Erreur serveur (" + res.status + ")");
+
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        countBox.textContent = "Aucune réponse pour le moment.";
+        return;
+      }
+
+      countBox.textContent = data.length + " réponse(s)";
+
+      const columns = Object.keys(data[0]);
+      const thead = document.createElement("tr");
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        th.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; text-align:left; position:sticky; top:0;";
+        thead.appendChild(th);
+      });
+      table.appendChild(thead);
+
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        columns.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = row[col] === null || row[col] === undefined ? "" : row[col];
+          td.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; white-space:nowrap;";
+          tr.appendChild(td);
+        });
+        table.appendChild(tr);
+      });
+    } catch (err) {
+      errorBox.textContent = err.message;
+    } finally {
+      loadBtn.disabled = false;
+      loadBtn.textContent = "Charger les résultats";
+    }
+  });
+</script>
+</body>
+</html>
