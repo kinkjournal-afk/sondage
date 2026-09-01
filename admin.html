@@ -8,79 +8,157 @@
 </head>
 <body>
 <main>
-  <h1>Résultats des sondages</h1>
-  <p class="muted">Page réservée à l'administrateur. Ne partage pas ce lien.</p>
 
-  <div class="card">
-    <div class="field">
-      <label for="worker">URL du Worker</label>
-      <input type="text" id="worker" value="https://sondage-worker.kink-journal.workers.dev">
+  <!-- Écran de connexion -->
+  <div id="login-view" class="login-screen">
+    <h1>Connexion</h1>
+    <p class="muted">Entre tes identifiants pour consulter les résultats.</p>
+    <div class="card" style="text-align:left;">
+      <div class="field">
+        <label for="worker">URL du Worker</label>
+        <input type="text" id="worker" value="https://sondage-worker.kink-journal.workers.dev">
+      </div>
+      <div class="field">
+        <label for="username">Identifiant</label>
+        <input type="text" id="username" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" autocomplete="current-password">
+      </div>
+      <button id="loginBtn">Se connecter</button>
+      <p class="error-message" id="login-error"></p>
     </div>
-    <div class="field">
-      <label for="survey">Sondage</label>
-      <select id="survey">
-        <option value="sexualite">Sexualité masculine</option>
-        <option value="bdsm">Cages & jouets</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="key">Clé admin (ADMIN_KEY)</label>
-      <input type="text" id="key" placeholder="colle ta clé ici">
-    </div>
-    <button id="loadBtn">Charger les résultats</button>
-    <p class="error-message" id="error"></p>
   </div>
 
-  <div class="results-toolbar">
-    <span class="count" id="count"></span>
+  <!-- Tableau de bord (visible une fois connecté) -->
+  <div id="dashboard-view" style="display:none;">
+    <div class="topbar">
+      <h1>Résultats des sondages <span id="role-badge"></span></h1>
+      <button class="link-button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <p class="muted">Ne partage pas ce lien ni ta clé.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="survey">Sondage</label>
+        <select id="survey">
+          <option value="sexualite">Sexualité masculine</option>
+          <option value="bdsm">Cages & jouets</option>
+        </select>
+      </div>
+      <button id="loadBtn">Charger les résultats</button>
+      <p class="error-message" id="error"></p>
+    </div>
+
+    <div class="results-toolbar">
+      <span class="count" id="count"></span>
+    </div>
+
+    <div class="results-wrap">
+      <table class="results" id="results"></table>
+    </div>
   </div>
 
-  <div class="results-wrap">
-    <table class="results" id="results"></table>
-  </div>
 </main>
 
 <script>
+  const loginView = document.getElementById("login-view");
+  const dashboardView = document.getElementById("dashboard-view");
+  const loginBtn = document.getElementById("loginBtn");
+  const loginError = document.getElementById("login-error");
+  const roleBadge = document.getElementById("role-badge");
+  const logoutBtn = document.getElementById("logoutBtn");
+
   const loadBtn = document.getElementById("loadBtn");
   const errorBox = document.getElementById("error");
   const countBox = document.getElementById("count");
   const table = document.getElementById("results");
   const surveySelect = document.getElementById("survey");
 
-  const ENUM_LABELS = {
-    "-1": "Pas de réponse",
-    "0": "Oui",
-    "1": "Non",
-  };
+  // --- Session (mémorisée le temps de l'onglet, pas au-delà) ---
+  function getSession() {
+    try {
+      const raw = sessionStorage.getItem("sondage_session");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+  function setSession(session) {
+    sessionStorage.setItem("sondage_session", JSON.stringify(session));
+  }
+  function clearSession() {
+    sessionStorage.removeItem("sondage_session");
+  }
+
+  function showDashboard(session) {
+    loginView.style.display = "none";
+    dashboardView.style.display = "block";
+    roleBadge.textContent = session.role === "admin" ? "Admin" : "Lecture seule";
+    roleBadge.className = "badge " + (session.role === "admin" ? "badge-admin" : "badge-viewer");
+  }
+
+  loginBtn.addEventListener("click", async () => {
+    loginError.textContent = "";
+    const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!worker || !username || !password) {
+      loginError.textContent = "Renseigne l'URL du Worker, l'identifiant et le mot de passe.";
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Connexion…";
+
+    try {
+      const res = await fetch(worker + "/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Connexion refusée.");
+
+      const session = { worker, token: data.token, role: data.role };
+      setSession(session);
+      showDashboard(session);
+    } catch (err) {
+      loginError.textContent = err.message;
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Se connecter";
+    }
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    clearSession();
+    dashboardView.style.display = "none";
+    loginView.style.display = "block";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    table.innerHTML = "";
+    countBox.textContent = "";
+  });
+
+  // Reprise de session si déjà connecté dans cet onglet
+  const existing = getSession();
+  if (existing) showDashboard(existing);
+
+  // --- Libellés d'affichage ---
+  const ENUM_LABELS = { "-1": "Pas de réponse", "0": "Oui", "1": "Non" };
   const ENUM_COLUMNS = new Set(["nude", "rase", "circ", "amour", "soumis", "dom", "NNN"]);
 
   const COLUMN_LABELS = {
-    age: "Âge",
-    porno: "Porno /sem",
-    nb_mast: "Masturbation /sem",
-    nude: "A envoyé un nude",
-    rase: "Se rase",
-    circ: "Circoncis",
-    taille_repos: "Taille au repos (cm)",
-    taille: "Taille en érection (cm)",
-    amour: "A eu un rapport",
-    age_amour: "Âge première fois",
-    orient: "Orientation",
-    soumis: "Soumis",
-    dom: "Dominant",
-    NNN: "A fait NNN",
-    NNN_resultat: "Jours tenus NNN",
-    comm: "Commentaire",
-    submitted_at: "Envoyé le",
-    cage: "Cage de chasteté",
-    cage_duree: "Depuis quand",
-    frequence: "Fréquence de port",
-    record_jours: "Record (jours)",
-    avec_partenaire: "Configuration",
-    jouets: "Autres jouets",
-    decouverte: "Découverte via",
-    role: "Rôle",
-    ressenti: "Ressenti principal",
+    age: "Âge", porno: "Porno /sem", nb_mast: "Masturbation /sem",
+    nude: "A envoyé un nude", rase: "Se rase", circ: "Circoncis",
+    taille_repos: "Taille au repos (cm)", taille: "Taille en érection (cm)",
+    amour: "A eu un rapport", age_amour: "Âge première fois", orient: "Orientation",
+    soumis: "Soumis", dom: "Dominant", NNN: "A fait NNN", NNN_resultat: "Jours tenus NNN",
+    comm: "Commentaire", submitted_at: "Envoyé le",
+    cage: "Cage de chasteté", cage_duree: "Depuis quand", frequence: "Fréquence de port",
+    record_jours: "Record (jours)", avec_partenaire: "Configuration", jouets: "Autres jouets",
+    decouverte: "Découverte via", role: "Rôle", ressenti: "Ressenti principal",
   };
 
   const BDSM_LABELS = {
@@ -108,28 +186,30 @@
   }
 
   loadBtn.addEventListener("click", async () => {
+    const session = getSession();
+    if (!session) return;
+
     errorBox.textContent = "";
     table.innerHTML = "";
     countBox.textContent = "";
 
-    const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
-    const key = document.getElementById("key").value.trim();
     const survey = surveySelect.value;
-
-    if (!worker || !key) {
-      errorBox.textContent = "Renseigne l'URL du Worker et la clé admin.";
-      return;
-    }
-
     loadBtn.disabled = true;
     loadBtn.textContent = "Chargement…";
 
     try {
-      const res = await fetch(worker + "/export/" + survey, {
-        headers: { "Authorization": "Bearer " + key }
+      const res = await fetch(session.worker + "/export/" + survey, {
+        headers: { "Authorization": "Bearer " + session.token }
       });
 
-      if (res.status === 401) throw new Error("Clé admin incorrecte.");
+      if (res.status === 401) {
+        clearSession();
+        errorBox.textContent = "";
+        dashboardView.style.display = "none";
+        loginView.style.display = "block";
+        loginError.textContent = "Session expirée, reconnecte-toi.";
+        return;
+      }
       if (!res.ok) throw new Error("Erreur serveur (" + res.status + ")");
 
       const data = await res.json();
@@ -150,8 +230,7 @@
         th.textContent = COLUMN_LABELS[col] || col;
         theadRow.appendChild(th);
       });
-      const thAction = document.createElement("th");
-      theadRow.appendChild(thAction);
+      if (session.role === "admin") theadRow.appendChild(document.createElement("th"));
       thead.appendChild(theadRow);
       table.appendChild(thead);
 
@@ -165,14 +244,16 @@
           tr.appendChild(td);
         });
 
-        const tdAction = document.createElement("td");
-        tdAction.className = "actions";
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Supprimer";
-        delBtn.className = "btn-delete";
-        delBtn.addEventListener("click", () => deleteResponse(survey, row._id, tr));
-        tdAction.appendChild(delBtn);
-        tr.appendChild(tdAction);
+        if (session.role === "admin") {
+          const tdAction = document.createElement("td");
+          tdAction.className = "actions";
+          const delBtn = document.createElement("button");
+          delBtn.textContent = "Supprimer";
+          delBtn.className = "btn-delete";
+          delBtn.addEventListener("click", () => deleteResponse(survey, row._id, tr));
+          tdAction.appendChild(delBtn);
+          tr.appendChild(tdAction);
+        }
 
         tbody.appendChild(tr);
       });
@@ -186,15 +267,14 @@
   });
 
   async function deleteResponse(survey, id, rowEl) {
+    const session = getSession();
+    if (!session || session.role !== "admin") return;
     if (!confirm("Supprimer définitivement cette réponse ?")) return;
 
-    const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
-    const key = document.getElementById("key").value.trim();
-
     try {
-      const res = await fetch(worker + "/response/" + survey + "/" + id, {
+      const res = await fetch(session.worker + "/response/" + survey + "/" + id, {
         method: "DELETE",
-        headers: { "Authorization": "Bearer " + key }
+        headers: { "Authorization": "Bearer " + session.token }
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
