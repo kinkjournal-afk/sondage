@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sondage — cages de chasteté & jouets</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div id="form-view">
+    <h1>Sondage anonyme — cages & jouets</h1>
+    <p class="muted">Sondage réservé aux 18 ans et plus. Aucune donnée permettant de t'identifier n'est demandée. Réponds "je ne réponds pas" si une question te met mal à l'aise.</p>
+
+    <form id="survey" class="card" novalidate>
+
+      <div class="field">
+        <label for="age">Quel est ton âge ? <span class="hint">Réservé aux 18 ans et plus.</span></label>
+        <input type="number" id="age" name="age" min="18" max="99" required>
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Utilises-tu (ou as-tu déjà utilisé) une cage de chasteté ?</legend>
+          <div class="radio-row"><input type="radio" name="cage" id="cage_oui" value="0" checked required><label for="cage_oui">Oui</label></div>
+          <div class="radio-row"><input type="radio" name="cage" id="cage_non" value="1"><label for="cage_non">Non</label></div>
+          <div class="radio-row"><input type="radio" name="cage" id="cage_interesse" value="2"><label for="cage_interesse">Jamais essayé, mais intéressé</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field" id="cage_duree_div">
+        <label for="cage_duree">Depuis combien de temps l'utilises-tu ? <span class="hint">Facultatif, ex. "6 mois", "2 ans".</span></label>
+        <input type="text" id="cage_duree" name="cage_duree" maxlength="40">
+      </div>
+
+      <div class="field" id="frequence_div">
+        <fieldset>
+          <legend>Fréquence de port</legend>
+          <div class="radio-row"><input type="radio" name="frequence" id="freq_occ" value="occasionnel"><label for="freq_occ">Occasionnel</label></div>
+          <div class="radio-row"><input type="radio" name="frequence" id="freq_reg" value="regulier"><label for="freq_reg">Régulier</label></div>
+          <div class="radio-row"><input type="radio" name="frequence" id="freq_perm" value="quasi_permanent"><label for="freq_perm">Quasi permanent</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field" id="record_div">
+        <label for="record_jours">Record de temps porté d'affilée (en jours) <span class="hint">Facultatif.</span></label>
+        <input type="number" id="record_jours" name="record_jours" min="0" max="3650" step="0.5">
+      </div>
+
+      <div class="field" id="partenaire_div">
+        <fieldset>
+          <legend>Utilisée seul ou avec un/une partenaire qui détient la clé ?</legend>
+          <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_seul" value="0"><label for="part_seul">Seul</label></div>
+          <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_cle" value="1"><label for="part_cle">Partenaire détient la clé</label></div>
+          <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_autre" value="2"><label for="part_autre">Autre configuration</label></div>
+          <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_np" value="-1" checked><label for="part_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <label for="jouets">Utilises-tu d'autres jouets sexuels ? <span class="hint">Facultatif — liste libre, ex. "plug, cockring".</span></label>
+        <input type="text" id="jouets" name="jouets" maxlength="200">
+      </div>
+
+      <div class="field">
+        <label for="decouverte">Comment as-tu découvert cette pratique ? <span class="hint">Facultatif.</span></label>
+        <input type="text" id="decouverte" name="decouverte" maxlength="200">
+      </div>
+
+      <div class="field">
+        <fieldset>
+          <legend>Dans ce contexte, tu te définirais plutôt comme :</legend>
+          <div class="radio-row"><input type="radio" name="role" id="role_soumis" value="soumis"><label for="role_soumis">Soumis</label></div>
+          <div class="radio-row"><input type="radio" name="role" id="role_dom" value="dominant"><label for="role_dom">Dominant</label></div>
+          <div class="radio-row"><input type="radio" name="role" id="role_switch" value="switch"><label for="role_switch">Switch</label></div>
+          <div class="radio-row"><input type="radio" name="role" id="role_np" value="non_reponse" checked><label for="role_np">Je ne réponds pas</label></div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <label for="ressenti">Ressenti principal associé à la pratique <span class="hint">Facultatif — ex. contrôle, excitation, discipline...</span></label>
+        <input type="text" id="ressenti" name="ressenti" maxlength="300">
+      </div>
+
+      <div class="field">
+        <label for="comm">Une remarque à ajouter ? <span class="hint">Facultatif. N'indique aucune information permettant de t'identifier.</span></label>
+        <textarea id="comm" name="comm" rows="4" maxlength="500"></textarea>
+      </div>
+
+      <button type="submit" id="submitBtn">Envoyer mes réponses</button>
+      <p class="error-message" id="form-error"></p>
+    </form>
+  </div>
+
+  <div id="status-view" class="status-box" style="display:none;">
+    <h1 id="status-title"></h1>
+    <p id="status-text" class="muted"></p>
+  </div>
+</main>
+
+<script>
+  const ENDPOINT = "https://sondage-worker.kink-journal.workers.dev/submit/bdsm";
+
+  const cageRadios = document.querySelectorAll('input[name="cage"]');
+  const dueeDiv = document.getElementById("cage_duree_div");
+  const freqDiv = document.getElementById("frequence_div");
+  const recordDiv = document.getElementById("record_div");
+  const partDiv = document.getElementById("partenaire_div");
+
+  function toggleCageFields() {
+    const isUser = document.getElementById("cage_oui").checked;
+    [dueeDiv, freqDiv, recordDiv, partDiv].forEach(div => {
+      div.style.display = isUser ? "block" : "none";
+    });
+  }
+  cageRadios.forEach(r => r.addEventListener("change", toggleCageFields));
+  toggleCageFields();
+
+  const form = document.getElementById("survey");
+  const errorBox = document.getElementById("form-error");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    errorBox.textContent = "";
+
+    const age = parseInt(document.getElementById("age").value, 10);
+    if (isNaN(age) || age < 18) {
+      errorBox.textContent = "Ce sondage est réservé aux personnes de 18 ans et plus.";
+      return;
+    }
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Envoi en cours…";
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Erreur serveur");
+
+      document.getElementById("form-view").style.display = "none";
+      const statusView = document.getElementById("status-view");
+      statusView.style.display = "block";
+      document.getElementById("status-title").textContent = "Merci d'avoir participé";
+      document.getElementById("status-text").textContent = "Tes réponses ont été enregistrées de façon anonyme.";
+    } catch (err) {
+      errorBox.textContent = "L'envoi a échoué. Réessaie dans quelques instants.";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Envoyer mes réponses";
+    }
+  });
+</script>
+</body>
+</html>
