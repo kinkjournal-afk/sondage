@@ -112,7 +112,7 @@
 
       countBox.textContent = data.length + " réponse(s)";
 
-      const columns = Object.keys(data[0]);
+      const columns = Object.keys(data[0]).filter(c => c !== "_id");
       const thead = document.createElement("tr");
       columns.forEach(col => {
         const th = document.createElement("th");
@@ -120,16 +120,31 @@
         th.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; text-align:left; position:sticky; top:0;";
         thead.appendChild(th);
       });
+      const thAction = document.createElement("th");
+      thAction.textContent = "";
+      thAction.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; position:sticky; top:0;";
+      thead.appendChild(thAction);
       table.appendChild(thead);
 
       data.forEach(row => {
         const tr = document.createElement("tr");
+        tr.dataset.id = row._id;
         columns.forEach(col => {
           const td = document.createElement("td");
           td.textContent = formatValue(col, row[col]);
           td.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; white-space:nowrap;";
           tr.appendChild(td);
         });
+
+        const tdAction = document.createElement("td");
+        tdAction.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px;";
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Supprimer";
+        delBtn.style.cssText = "background:#a4292b; padding:0.3rem 0.7rem; font-size:0.8rem;";
+        delBtn.addEventListener("click", () => deleteResponse(row._id, tr));
+        tdAction.appendChild(delBtn);
+        tr.appendChild(tdAction);
+
         table.appendChild(tr);
       });
     } catch (err) {
@@ -139,6 +154,28 @@
       loadBtn.textContent = "Charger les résultats";
     }
   });
+
+  async function deleteResponse(id, rowEl) {
+    if (!confirm("Supprimer définitivement cette réponse ?")) return;
+
+    const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
+    const key = document.getElementById("key").value.trim();
+
+    try {
+      const res = await fetch(worker + "/response/" + id, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + key }
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Échec de la suppression");
+      }
+      rowEl.remove();
+      countBox.textContent = table.rows.length - 1 + " réponse(s)";
+    } catch (err) {
+      alert(err.message);
+    }
+  }
 </script>
 </body>
 </html>
