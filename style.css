@@ -160,3 +160,79 @@ button:hover:not(:disabled) { background: #31496a; }
   text-align: center;
   padding: 3rem 1.5rem;
 }
+
+/* Tableau de résultats (page admin) */
+.results-wrap {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+table.results {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+table.results thead th {
+  position: sticky;
+  top: 0;
+  background: #2c2f36;
+  color: #fff;
+  text-align: left;
+  padding: 0.7rem 1rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-bottom: 2px solid #1c1e23;
+}
+
+table.results tbody td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+table.results tbody tr:nth-child(even) {
+  background: #f6f5f2;
+}
+
+table.results tbody tr:hover {
+  background: #ecf1f6;
+}
+
+table.results td.actions {
+  text-align: right;
+}
+
+.btn-delete {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+}
+
+.btn-delete:hover {
+  background: var(--error);
+  color: #fff;
+}
+
+.results-toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.results-toolbar .count {
+  font-weight: 600;
+  color: var(--ink);
+}
