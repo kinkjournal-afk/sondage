@@ -25,6 +25,7 @@
           <div class="radio-row"><input type="radio" name="cage" id="cage_oui" value="0" checked required><label for="cage_oui">Oui</label></div>
           <div class="radio-row"><input type="radio" name="cage" id="cage_non" value="1"><label for="cage_non">Non</label></div>
           <div class="radio-row"><input type="radio" name="cage" id="cage_interesse" value="2"><label for="cage_interesse">Jamais essayé, mais intéressé</label></div>
+          <div class="radio-row"><input type="radio" name="cage" id="cage_pas_interesse" value="3"><label for="cage_pas_interesse">Jamais, pas intéressé</label></div>
         </fieldset>
       </div>
 
@@ -52,14 +53,23 @@
           <legend>Utilisée seul ou avec un/une partenaire qui détient la clé ?</legend>
           <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_seul" value="0"><label for="part_seul">Seul</label></div>
           <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_cle" value="1"><label for="part_cle">Partenaire détient la clé</label></div>
+          <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_distance" value="3"><label for="part_distance">Dom à distance</label></div>
           <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_autre" value="2"><label for="part_autre">Autre configuration</label></div>
           <div class="radio-row"><input type="radio" name="avec_partenaire" id="part_np" value="-1" checked><label for="part_np">Je ne réponds pas</label></div>
         </fieldset>
       </div>
 
       <div class="field">
-        <label for="jouets">Utilises-tu d'autres jouets sexuels ? <span class="hint">Facultatif — liste libre, ex. "plug, cockring".</span></label>
-        <input type="text" id="jouets" name="jouets" maxlength="200">
+        <fieldset>
+          <legend>Utilises-tu d'autres jouets sexuels ? <span class="hint">Facultatif, coche tout ce qui s'applique.</span></legend>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_plug" value="Plug anal"><label for="jouet_plug">Plug anal</label></div>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_cockring" value="Cockring"><label for="jouet_cockring">Cockring</label></div>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_gode" value="Gode"><label for="jouet_gode">Gode</label></div>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_menottes" value="Menottes / liens"><label for="jouet_menottes">Menottes / liens</label></div>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_fouet" value="Fouet / paddle"><label for="jouet_fouet">Fouet / paddle</label></div>
+          <div class="radio-row"><input type="checkbox" name="jouet_cb" id="jouet_bandeau" value="Bandeau / bâillon"><label for="jouet_bandeau">Bandeau / bâillon</label></div>
+        </fieldset>
+        <input type="text" id="jouets_autre" name="jouets_autre" maxlength="100" placeholder="Autre (facultatif)" style="margin-top:0.7rem;">
       </div>
 
       <div class="field">
@@ -132,6 +142,16 @@
 
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+
+    // Les jouets sont saisis via des cases à cocher (jouet_cb) + un champ libre
+    // (jouets_autre) ; on les combine en une seule chaîne pour le Worker.
+    const jouetsCochees = formData.getAll("jouet_cb");
+    const jouetsAutre = (payload.jouets_autre || "").trim();
+    const jouetsListe = [...jouetsCochees];
+    if (jouetsAutre) jouetsListe.push(jouetsAutre);
+    payload.jouets = jouetsListe.join(", ");
+    delete payload.jouet_cb;
+    delete payload.jouets_autre;
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Envoi en cours…";
