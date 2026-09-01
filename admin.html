@@ -8,13 +8,20 @@
 </head>
 <body>
 <main>
-  <h1>Résultats du sondage</h1>
+  <h1>Résultats des sondages</h1>
   <p class="muted">Page réservée à l'administrateur. Ne partage pas ce lien.</p>
 
   <div class="card">
     <div class="field">
       <label for="worker">URL du Worker</label>
       <input type="text" id="worker" value="https://sondage-worker.kink-journal.workers.dev">
+    </div>
+    <div class="field">
+      <label for="survey">Sondage</label>
+      <select id="survey">
+        <option value="sexualite">Sexualité masculine</option>
+        <option value="bdsm">Cages & jouets</option>
+      </select>
     </div>
     <div class="field">
       <label for="key">Clé admin (ADMIN_KEY)</label>
@@ -24,10 +31,12 @@
     <p class="error-message" id="error"></p>
   </div>
 
-  <p id="count" class="muted"></p>
+  <div class="results-toolbar">
+    <span class="count" id="count"></span>
+  </div>
 
-  <div style="overflow-x:auto;">
-    <table id="results" style="width:100%; border-collapse: collapse; font-size: 0.85rem;"></table>
+  <div class="results-wrap">
+    <table class="results" id="results"></table>
   </div>
 </main>
 
@@ -36,8 +45,8 @@
   const errorBox = document.getElementById("error");
   const countBox = document.getElementById("count");
   const table = document.getElementById("results");
+  const surveySelect = document.getElementById("survey");
 
-  // Colonnes dont les valeurs -1/0/1 doivent être traduites.
   const ENUM_LABELS = {
     "-1": "Pas de réponse",
     "0": "Oui",
@@ -45,7 +54,6 @@
   };
   const ENUM_COLUMNS = new Set(["nude", "rase", "circ", "amour", "soumis", "dom", "NNN"]);
 
-  // Noms de colonnes plus lisibles à l'affichage.
   const COLUMN_LABELS = {
     age: "Âge",
     porno: "Porno /sem",
@@ -64,12 +72,32 @@
     NNN_resultat: "Jours tenus NNN",
     comm: "Commentaire",
     submitted_at: "Envoyé le",
+    cage: "Cage de chasteté",
+    cage_duree: "Depuis quand",
+    frequence: "Fréquence de port",
+    record_jours: "Record (jours)",
+    avec_partenaire: "Configuration",
+    jouets: "Autres jouets",
+    decouverte: "Découverte via",
+    role: "Rôle",
+    ressenti: "Ressenti principal",
+  };
+
+  const BDSM_LABELS = {
+    cage: { "0": "Oui", "1": "Non", "2": "Intéressé" },
+    frequence: { occasionnel: "Occasionnel", regulier: "Régulier", quasi_permanent: "Quasi permanent" },
+    avec_partenaire: { "-1": "Pas de réponse", "0": "Seul", "1": "Partenaire a la clé", "2": "Autre" },
+    role: { soumis: "Soumis", dominant: "Dominant", switch: "Switch", non_reponse: "Pas de réponse" },
   };
 
   function formatValue(col, value) {
-    if (value === null || value === undefined || value === "") return "";
+    if (value === null || value === undefined || value === "") return "—";
     if (ENUM_COLUMNS.has(col)) {
       const label = ENUM_LABELS[String(value)];
+      if (label) return label;
+    }
+    if (BDSM_LABELS[col]) {
+      const label = BDSM_LABELS[col][String(value)];
       if (label) return label;
     }
     if (col === "submitted_at") {
@@ -86,6 +114,7 @@
 
     const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
     const key = document.getElementById("key").value.trim();
+    const survey = surveySelect.value;
 
     if (!worker || !key) {
       errorBox.textContent = "Renseigne l'URL du Worker et la clé admin.";
@@ -96,7 +125,7 @@
     loadBtn.textContent = "Chargement…";
 
     try {
-      const res = await fetch(worker + "/export", {
+      const res = await fetch(worker + "/export/" + survey, {
         headers: { "Authorization": "Bearer " + key }
       });
 
@@ -113,40 +142,41 @@
       countBox.textContent = data.length + " réponse(s)";
 
       const columns = Object.keys(data[0]).filter(c => c !== "_id");
-      const thead = document.createElement("tr");
+
+      const thead = document.createElement("thead");
+      const theadRow = document.createElement("tr");
       columns.forEach(col => {
         const th = document.createElement("th");
         th.textContent = COLUMN_LABELS[col] || col;
-        th.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; text-align:left; position:sticky; top:0;";
-        thead.appendChild(th);
+        theadRow.appendChild(th);
       });
       const thAction = document.createElement("th");
-      thAction.textContent = "";
-      thAction.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; background:#efedea; position:sticky; top:0;";
-      thead.appendChild(thAction);
+      theadRow.appendChild(thAction);
+      thead.appendChild(theadRow);
       table.appendChild(thead);
 
+      const tbody = document.createElement("tbody");
       data.forEach(row => {
         const tr = document.createElement("tr");
         tr.dataset.id = row._id;
         columns.forEach(col => {
           const td = document.createElement("td");
           td.textContent = formatValue(col, row[col]);
-          td.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px; white-space:nowrap;";
           tr.appendChild(td);
         });
 
         const tdAction = document.createElement("td");
-        tdAction.style.cssText = "border:1px solid #d9d7d1; padding:6px 8px;";
+        tdAction.className = "actions";
         const delBtn = document.createElement("button");
         delBtn.textContent = "Supprimer";
-        delBtn.style.cssText = "background:#a4292b; padding:0.3rem 0.7rem; font-size:0.8rem;";
-        delBtn.addEventListener("click", () => deleteResponse(row._id, tr));
+        delBtn.className = "btn-delete";
+        delBtn.addEventListener("click", () => deleteResponse(survey, row._id, tr));
         tdAction.appendChild(delBtn);
         tr.appendChild(tdAction);
 
-        table.appendChild(tr);
+        tbody.appendChild(tr);
       });
+      table.appendChild(tbody);
     } catch (err) {
       errorBox.textContent = err.message;
     } finally {
@@ -155,14 +185,14 @@
     }
   });
 
-  async function deleteResponse(id, rowEl) {
+  async function deleteResponse(survey, id, rowEl) {
     if (!confirm("Supprimer définitivement cette réponse ?")) return;
 
     const worker = document.getElementById("worker").value.trim().replace(/\/$/, "");
     const key = document.getElementById("key").value.trim();
 
     try {
-      const res = await fetch(worker + "/response/" + id, {
+      const res = await fetch(worker + "/response/" + survey + "/" + id, {
         method: "DELETE",
         headers: { "Authorization": "Bearer " + key }
       });
@@ -171,7 +201,8 @@
         throw new Error(data.error || "Échec de la suppression");
       }
       rowEl.remove();
-      countBox.textContent = table.rows.length - 1 + " réponse(s)";
+      const remaining = table.querySelectorAll("tbody tr").length;
+      countBox.textContent = remaining + " réponse(s)";
     } catch (err) {
       alert(err.message);
     }
